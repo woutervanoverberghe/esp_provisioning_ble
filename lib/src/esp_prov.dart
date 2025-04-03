@@ -226,7 +226,7 @@ class EspProv {
     );
   }
 
-  Future<Uint8List> sendReceiveCustomData(Uint8List data,
+  Future<Uint8List> sendReceiveCustomData(String endpoint, Uint8List data,
       {int packageSize = 256}) async {
     var i = data.length;
     var offset = 0;
@@ -234,7 +234,7 @@ class EspProv {
     while (i > 0) {
       var needToSend = data.sublist(offset, i < packageSize ? i : packageSize);
       var encrypted = await security.encrypt(needToSend);
-      var newData = await transport.sendReceive('custom-data', encrypted);
+      var newData = await transport.sendReceive(endpoint, encrypted);
 
       if (newData.isNotEmpty) {
         var decrypted = await security.decrypt(newData);
