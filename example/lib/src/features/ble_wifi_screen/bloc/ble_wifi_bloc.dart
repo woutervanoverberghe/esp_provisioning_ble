@@ -71,7 +71,7 @@ class BleWifiBloc extends Bloc<BleWifiEvent, BleWifiState> {
 
     on<BleWifiSendConfigEvent>((event, emit) async {
       add(BleWifiLoadingEvent());
-      var customAnswerBytes = await prov.sendReceiveCustomData(
+      var customAnswerBytes = await prov.sendReceiveCustomData("custom-data",
         Uint8List.fromList(
           utf8.encode(event.customSendMessage),
         ),

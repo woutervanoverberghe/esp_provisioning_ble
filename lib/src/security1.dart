@@ -17,6 +17,7 @@ class Security1 implements ProvSecurity {
   late SimplePublicKey devicePublicKey;
   late Uint8List deviceRandom;
   Crypt crypt = Crypt();
+  Crypto crypto = Crypto();
   X25519 x25519 = X25519();
   Sha256 sha256 = Sha256();
 
@@ -121,7 +122,13 @@ class Security1 implements ProvSecurity {
       _verbose(
           'setup0Response: pop: $pop, hash: ${hash.bytes.toString()} sharedK: ${sharedK.toString()}');
     }
+
+    
+    crypto.init(Uint8List.fromList(sharedK), deviceRandom);
+
     await crypt.init(Uint8List.fromList(sharedK), deviceRandom);
+
+
     _verbose(
         'setup0Response: cipherSecretKey: ${sharedK.toString()} cipherNonce: ${deviceRandom.toString()}');
     return setupResp;
@@ -129,6 +136,7 @@ class Security1 implements ProvSecurity {
 
   Future<SessionData> setup1Request(SessionData responseData) async {
     _verbose('setup1Request ${devicePublicKey.bytes.toString()}');
+    var clientVerify2 = crypto.crypt(Uint8List.fromList(devicePublicKey.bytes));
     var clientVerify = await encrypt(Uint8List.fromList(devicePublicKey.bytes));
 
     _verbose('client verify ${clientVerify.toString()}');
@@ -149,8 +157,10 @@ class Security1 implements ProvSecurity {
     if (setupResp.secVer == SecSchemeVersion.SecScheme1) {
       final deviceVerify = setupResp.sec1.sr1.deviceVerifyData;
       _verbose('Device verify: ${deviceVerify.toString()}');
-      final encClientPubkey = await decrypt(
-          Uint8List.fromList(setupResp.sec1.sr1.deviceVerifyData));
+      
+      final encClientPubkey2 = crypto.crypt( Uint8List.fromList(setupResp.sec1.sr1.deviceVerifyData));
+      final encClientPubkey = await decrypt( Uint8List.fromList(setupResp.sec1.sr1.deviceVerifyData));
+
       _verbose('Enc client pubkey: ${encClientPubkey.toString()}');
       Function eq = const ListEquality().equals;
       List<int> temp =
